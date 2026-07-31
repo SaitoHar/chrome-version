@@ -72,3 +72,4 @@ Chown: You may need to run `chown _apt {path to installer.deb}` to be able to ru
 This repository is checking for new Chrome versions from the Google update service daily at 10am. Those new versions are recorded in the versions.json file. NOTE: files are not downloaded until a new release or push is made against the repository.
 
 Anytime an update is pushed to this repository, Github Actions will update any missing release assets. If you wish to regenerate a version, simply delete the release (or asset) and it will be re-created.
+# chrome-version

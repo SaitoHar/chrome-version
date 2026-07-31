@@ -2,6 +2,22 @@
 
 This project maintains versions of Google Chrome that can be run side-by-side and will preserve their original version (ie, no auto-updating).
 
+## Linux-only fork
+
+This fork builds **Linux assets only**. The macOS and Windows jobs were removed, since they need Apple signing certificates and a Windows runner that this fork does not have.
+
+Setup after forking:
+
+1. Enable Actions (Settings → Actions → General → allow all actions) and grant workflows write access (Workflow permissions → "Read and write permissions").
+2. Optionally set the repository variable `SYNC_MIN_VERSION` (Settings → Variables → Actions) to the oldest Chrome version worth building. Defaults to `148.0.0.0`.
+3. Run the "Check For Chrome Updates" workflow to populate `versions.json`, then "Sync Linux Releases" to build and upload the tarballs.
+
+`SYNC_MAX_RELEASES` caps how many versions a single run builds, so the 6-hour Actions limit is not hit while catching up on a backlog. Re-run the workflow until nothing is left to build.
+
+Note that Google's deb pool only keeps a rolling window of past versions, so anything older than roughly a year can no longer be rebuilt from source.
+
+Consumers of `@ulixee/chrome-*` npm packages download from the upstream `ulixee/chrome-versions` repository — that URL is hardcoded in `packages/chrome-app/lib/installChrome.ts`. To use this fork's builds, either patch that constant or install Chrome manually and point Hero at it with `HERO_SKIP_CHROME_DOWNLOAD=1` plus `CHROME_<major>_BIN`.
+
 ## Releases
 
 Each Chrome version has an associated Github release. The assets attached to each release are the pre-configured installs for each operating system.

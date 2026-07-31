@@ -6,32 +6,50 @@ import * as Windows from './windows';
 import * as Debian from './debian';
 
 const osesToSync = process.env.SYNC_OS_KEYS.split(',').map(x => x.trim());
+const minVersion = process.env.SYNC_MIN_VERSION;
+const maxReleases = Number(process.env.SYNC_MAX_RELEASES ?? 0);
+
+function compareVersions(a: string, b: string): number {
+  const pa = a.split('.').map(Number);
+  const pb = b.split('.').map(Number);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i += 1) {
+    const na = pa[i] ?? 0;
+    const nb = pb[i] ?? 0;
+    if (na !== nb) return na - nb;
+  }
+  return 0;
+}
 
 async function syncVersions() {
   const releases = new GithubReleases();
   const versionEntries = Object.entries(versions);
-  // sort by version key descending
-  versionEntries.sort((a, b) => {
-    return a[0].localeCompare(b[0]);
-  });
+  // newest first, so a timed-out job still produces the versions that matter
+  versionEntries.sort((a, b) => compareVersions(b[0], a[0]));
+
+  let built = 0;
   for (const [version, urls] of versionEntries) {
+    if (minVersion && compareVersions(version, minVersion) < 0) continue;
+
+    const osesWithUrl = osesToSync.filter(os => urls[os]);
+    if (!osesWithUrl.length) continue;
+
     let release = await releases.get(version);
+    const missing = osesWithUrl.filter(
+      os => !release?.assets.some(a => a.name === getAssetName(os, version)),
+    );
+    if (!missing.length) continue;
+
+    if (maxReleases && built >= maxReleases) {
+      console.log('Reached SYNC_MAX_RELEASES=%s, stopping before %s', maxReleases, version);
+      break;
+    }
+
     if (!release) {
       console.log('Creating missing Chrome Release for %s', version);
       release = await releases.create(version);
     }
 
-    for (const osToSync of osesToSync) {
-      let assetName = getAssetName(osToSync, version);
-      const existingAsset = release.assets.find(a => a.name === assetName);
-      if (existingAsset) {
-        continue;
-      }
-      const url = urls[osToSync];
-      if (!url) {
-        continue;
-      }
-
+    for (const osToSync of missing) {
       console.log(`Asset needed for Chrome %s on %s`, version, osToSync);
 
       if (osToSync === 'win32' || osToSync === 'win64') {
@@ -42,6 +60,7 @@ async function syncVersions() {
         await Debian.process(osToSync, version, releases);
       }
     }
+    built += 1;
   }
 
   process.exit();

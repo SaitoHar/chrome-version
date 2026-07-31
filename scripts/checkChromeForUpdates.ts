@@ -201,10 +201,22 @@ async function getChromeUpdateUrlsLinux() {
   }
 }
 
+const checkOses = (process.env.CHECK_OS_KEYS ?? 'linux').split(',').map(x => x.trim());
+
+// a broken vendor protocol for one platform must not block the others
+async function attempt(label: string, fn: () => Promise<void>): Promise<void> {
+  if (!checkOses.includes(label.split(':')[0])) return;
+  try {
+    await fn();
+  } catch (error) {
+    console.log('Update check failed for %s', label, error);
+  }
+}
+
 (async function main() {
-  await getChromeUpdateUrls('mac', 'arm64');
-  await getChromeUpdateUrls('mac', 'x64');
-  await getChromeUpdateUrls('win', 'x86');
-  await getChromeUpdateUrls('win', 'x64');
-  await getChromeUpdateUrlsLinux();
+  await attempt('mac:arm64', () => getChromeUpdateUrls('mac', 'arm64'));
+  await attempt('mac:x64', () => getChromeUpdateUrls('mac', 'x64'));
+  await attempt('win:x86', () => getChromeUpdateUrls('win', 'x86'));
+  await attempt('win:x64', () => getChromeUpdateUrls('win', 'x64'));
+  await attempt('linux', () => getChromeUpdateUrlsLinux());
 })();

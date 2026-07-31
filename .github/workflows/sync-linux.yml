@@ -1,0 +1,54 @@
+name: Sync Linux Releases
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      min_version:
+        description: Oldest Chrome version to build (e.g. 148.0.0.0)
+        required: false
+
+concurrency:
+  group: sync-linux
+
+permissions:
+  contents: write
+
+jobs:
+  ubuntu:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
+          df -h /
+
+      - name: Yarn Install
+        run: yarn
+        env:
+          HERO_SKIP_CHROME_DOWNLOAD: true
+
+      - name: Synchronize Versions File
+        run: node ./scripts/syncVersions.js
+        env:
+          SYNC_OS_KEYS: linux
+          SYNC_MIN_VERSION: ${{ github.event.inputs.min_version || vars.SYNC_MIN_VERSION || '148.0.0.0' }}
+          SYNC_MAX_RELEASES: 10
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          branch: main
+          commit_message: Sync Versions Cleanup

@@ -73,3 +73,4 @@ This repository is checking for new Chrome versions from the Google update servi
 
 Anytime an update is pushed to this repository, Github Actions will update any missing release assets. If you wish to regenerate a version, simply delete the release (or asset) and it will be re-created.
 # chrome-version
+# chrome-version

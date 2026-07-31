@@ -5,8 +5,12 @@ on:
     branches: [main]
   workflow_dispatch:
     inputs:
+      versions:
+        description: Exact Chrome versions to build, comma separated. Leave as-is to build everything above min_version.
+        required: false
+        default: 149.0.7827.200,150.0.7871.186
       min_version:
-        description: Oldest Chrome version to build (e.g. 148.0.0.0)
+        description: Oldest Chrome version to build, ignored when `versions` is set
         required: false
 
 concurrency:
@@ -44,6 +48,7 @@ jobs:
         run: node ./scripts/syncVersions.js
         env:
           SYNC_OS_KEYS: linux
+          SYNC_VERSIONS: ${{ github.event.inputs.versions }}
           SYNC_MIN_VERSION: ${{ github.event.inputs.min_version || vars.SYNC_MIN_VERSION || '148.0.0.0' }}
           SYNC_MAX_RELEASES: 10
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

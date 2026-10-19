@@ -8,7 +8,7 @@ on:
       versions:
         description: Exact Chrome versions to build, comma separated. Leave as-is to build everything above min_version.
         required: false
-        default: 149.0.7827.200,150.0.7871.186
+        default: 154.0.8037.97,155.0.8059.84
       min_version:
         description: Oldest Chrome version to build, ignored when `versions` is set
         required: false

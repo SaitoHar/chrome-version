@@ -1,4 +1,8 @@
 {
+  "158.0.8127.88": {
+    "linux": "http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_158.0.8127.88-1_amd64.deb",
+    "linux_rpm": "http://dl.google.com/linux/chrome/rpm/stable/x86_64/google-chrome-stable-158.0.8127.88-1.x86_64.rpm"
+  },
   "158.0.8127.36": {
     "linux": "http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_158.0.8127.36-1_amd64.deb",
     "linux_rpm": "http://dl.google.com/linux/chrome/rpm/stable/x86_64/google-chrome-stable-158.0.8127.36-1.x86_64.rpm"
